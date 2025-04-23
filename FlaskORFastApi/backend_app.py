@@ -2,10 +2,17 @@
 import os
 from flask import Flask, request, jsonify, Response # 安装 Flask: pip install Flask
 from flask_cors import CORS # 安装 CORS: pip install Flask-Cors
+from dotenv import load_dotenv # 导入 load_dotenv
 # 确保 zju_chat_client 在 Python 路径中，或者将其安装为包 (pip install .)
 from zju_chat_client import ZjuChatClient
 import json
 import logging
+import requests # Import requests for exception handling
+
+# 在应用启动时加载 .env 文件
+# 这会将 .env 文件中的变量加载到 os.environ 中
+# 如果 .env 文件和系统环境变量中都存在同名变量，默认情况下 .env 的值会覆盖系统变量
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -36,7 +43,9 @@ def chat_handler():
 
     data = request.json
     user_content = data.get('user_content')
-    model = data.get('model', 'deepseek-r1-671b') # 使用环境变量或配置管理默认模型可能更好
+    # 从环境变量读取默认模型，如果未设置则使用硬编码的默认值
+    default_model = os.getenv('DEFAULT_MODEL', 'deepseek-r1-671b')
+    model = data.get('model', default_model) # 使用 .env 或系统变量中的默认模型
     stream = data.get('stream', False)
     system_content = data.get('system_content') # 可选的系统提示
 
